@@ -1,0 +1,52 @@
+/* Dunkler, verschwommener Hintergrund */
+#popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.4);   /* dunkler */
+  backdrop-filter: blur(6px);     /* Hintergrund verschwommen */
+  display: none;                  /* wird per JS sichtbar */
+  z-index: 999;
+}
+
+/* Popup-Feld */
+#popup-box {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  width: 420px;                   /* größer */
+  max-width: 90%;
+  padding: 28px;
+  background: white;
+  border-radius: 14px;
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+  display: none;
+  z-index: 1000;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Schließen-Button */
+#popup-close {
+  margin-top: 18px;
+  padding: 10px 16px;
+  background: #d2bba4;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translate(-50%, -48%) scale(0.95); }
+  to   { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}
+
+
+
+
+

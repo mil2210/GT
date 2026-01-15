@@ -1,0 +1,317 @@
+
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Grow Together – Stammdaten</title>
+  <style>
+    :root {
+      --baby:#e7d0b9;
+      --mama:#d2bba4;
+      --schrift:#625548;
+      --glass: rgba(255,255,255,0.4);
+      --accent: #bfa68f;
+      --bg: linear-gradient(135deg, #fffaf7 0%, #f7f0e8 100%);
+      --radius: 14px;
+      --shadow: 0 6px 20px rgba(98,85,72,0.12);
+      font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--schrift);
+      display: flex;
+      justify-content: center;
+      padding: 28px;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1200px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      align-items: stretch;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--glass), rgba(255,255,255,0.3));
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      min-height: 100%;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .accordion-header {
+      background: linear-gradient(180deg, #d2bba4, #e7d0b9);
+      padding: 12px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      margin: 10px 0;
+      color: #625548;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(98,85,72,0.15);
+      transition: all 0.25s ease;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .accordion-header:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 18px rgba(98,85,72,0.2);
+    }
+
+    .accordion-header::after {
+      content: '▼';
+      transition: transform 0.3s;
+    }
+
+    .accordion-header.active::after {
+      transform: rotate(180deg);
+    }
+
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .accordion-content.active {
+      max-height: 2000px;
+      padding: 10px 0;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-4px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    label {
+      display: block;
+      margin-top: 12px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 8px 10px;
+      margin-top: 4px;
+      border-radius: 10px;
+      border: 1px solid rgba(98,85,72,0.08);
+      font-size: 14px;
+      transition: border-color 0.2s;
+    }
+
+    input:focus, textarea:focus, select:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+    }
+
+    .accordion-wrapper { flex: 1; }
+
+    .btn {
+      margin-top: 20px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      background: linear-gradient(180deg, var(--mama), var(--baby));
+      color: var(--schrift);
+      font-weight: 600;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+      transition: transform 0.2s;
+      width: 100%;
+    }
+
+    .btn:hover { transform: translateY(-2px); }
+
+    .info-icon {
+      cursor: help;
+      color: var(--accent);
+      font-weight: bold;
+      margin-left: 5px;
+      position: relative;
+    }
+
+    .tooltip {
+      display: none;
+      position: absolute;
+      background: white;
+      border: 1px solid rgba(98,85,72,0.2);
+      padding: 10px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 250px;
+      font-size: 13px;
+      z-index: 100;
+      top: 100%;
+      left: 0;
+      margin-top: 5px;
+      font-weight: normal;
+    }
+
+    .info-icon:hover .tooltip { display: block; }
+
+    @media (max-width: 900px) {
+      .container { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Navigation -->
+    <div style="grid-column: 1 / -1; background: linear-gradient(180deg, rgba(255,255,255,0.75), rgba(255,255,255,0.6)); border-radius: 14px; padding: 16px 24px; box-shadow: 0 6px 20px rgba(98,85,72,0.12); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; backdrop-filter: blur(8px);">
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <img src="Logo-GT_v01.png" alt="Logo" style="height:56px; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));">
+        <strong style="color:#625548">Grow Together</strong>
+      </div>
+
+      <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+        <a href="startseite.html" style="color: #625548; text-decoration: none; padding: 8px 14px; background: rgba(255,255,255,0.7); border-radius: 10px; font-weight: 600; font-size: 14px;">🏠 Startseite</a>
+        <a href="kalender.html" style="color: #625548; text-decoration: none; padding: 8px 14px; background: rgba(255,255,255,0.7); border-radius: 10px; font-weight: 600; font-size: 14px;">📅 Kalender</a>
+        <a href="stammdaten.html" style="color: #625548; text-decoration: none; padding: 8px 14px; background: linear-gradient(135deg, #d2bba4, #e7d0b9); border-radius: 10px; font-weight: 600; font-size: 14px; box-shadow: 0 4px 12px rgba(98,85,72,0.15);">📋 Stammdaten</a>
+        <a href="dokumente.html" style="color: #625548; text-decoration: none; padding: 8px 14px; background: rgba(255,255,255,0.7); border-radius: 10px; font-weight: 600; font-size: 14px;">📄 Dokumente</a>
+      </div>
+
+      <button id="logoutBtn" style="background: transparent; border: 1px solid #625548; color: #625548; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 14px;">Abmelden</button>
+    </div>
+
+    <!-- Mutter -->
+    <div class="card">
+      <h2>👩 Stammdaten der Mutter</h2>
+
+      <div class="accordion-wrapper">
+        <div class="accordion-header" data-target="mutter-basis">Basisdaten</div>
+        <div class="accordion-content" id="mutter-basis">
+          <label for="mutterName">Name</label>
+          <input type="text" id="mutterName" placeholder="Vor- und Nachname">
+
+          <label for="mutterGebDatum">Geburtsdatum</label>
+          <input type="date" id="mutterGebDatum"
+         min="1940-01-01">
+
+          <label for="mutterAdresse">Adresse</label>
+          <input type="text" id="mutterAdresse" placeholder="Straße, PLZ, Ort">
+
+          <label for="mutterKontakt">Kontakt (Telefon/Email)</label>
+          <input type="text" id="mutterKontakt" placeholder="z.B. +43 123 456789 oder mail@example.com">
+
+          <label for="mutterVersicherungsNr">Versicherungsnummer</label>
+          <input type="text" id="mutterVersicherungsNr" inputmode="numeric" pattern="\d*" maxlength="20" placeholder="nur Zahlen">
+        </div>
+
+        <div class="accordion-header" data-target="mutter-med">Medizinische Daten</div>
+        <div class="accordion-content" id="mutter-med">
+          <label for="mutterBlutgruppe">Blutgruppe + Rhesusfaktor</label>
+          <input type="text" id="mutterBlutgruppe" placeholder="z.B. A+, 0-, AB+">
+
+          <label for="mutterVorerkrankungen">Vorerkrankungen / chronische Erkrankungen</label>
+          <textarea id="mutterVorerkrankungen" placeholder="z.B. Diabetes, Bluthochdruck, Schilddrüse..."></textarea>
+
+          <label for="mutterAllergien">Allergien</label>
+          <textarea id="mutterAllergien" placeholder="z.B. Penicillin, Nüsse, Pollen..."></textarea>
+
+          <label for="mutterMedikamente">Medikamente</label>
+          <textarea id="mutterMedikamente" placeholder="Welche Medikamente werden regelmäßig eingenommen?"></textarea>
+        </div>
+
+        <div class="accordion-header" data-target="mutter-ss">Schwangerschaftsanamnese</div>
+        <div class="accordion-content" id="mutter-ss">
+          <label for="mutterFruehereSS">Frühere Schwangerschaften</label>
+          <textarea id="mutterFruehereSS" placeholder="Anzahl, Verlauf, Komplikationen..."></textarea>
+
+          <label for="mutterBeruf">Beruf / mögliche Risiken am Arbeitsplatz</label>
+          <textarea id="mutterBeruf" placeholder="z.B. Bürojob, Pflegekraft, Chemielabor..."></textarea>
+
+          <label for="mutterRisiken">Nikotin / Alkohol / andere Risiken</label>
+          <textarea id="mutterRisiken" placeholder="Anamnese zu Lebensstilfaktoren"></textarea>
+        </div>
+      </div>
+
+      <button class="btn" id="saveMotherBtn">💾 Speichern</button>
+    </div>
+
+    <!-- Kind -->
+    <div class="card">
+      <h2>👶 Stammdaten des Kindes</h2>
+
+      <div class="accordion-wrapper">
+        <div class="accordion-header" data-target="kind-basis">Basisdaten</div>
+        <div class="accordion-content" id="kind-basis">
+          <label for="kindName">Name des Kindes</label>
+          <input type="text" id="kindName" placeholder="Vor- und Nachname">
+
+          <label for="kindGebDatum">Geburtsdatum</label>
+          <input type="date" id="kindGebDatum">
+
+          <label for="kindGebZeit">Geburtszeit</label>
+          <input type="time" id="kindGebZeit">
+
+          <label for="kindGebOrt">Geburtsort</label>
+          <input type="text" id="kindGebOrt" placeholder="Krankenhaus, Stadt">
+        </div>
+
+        <div class="accordion-header" data-target="kind-geburt">Geburtsdaten & Messungen</div>
+        <div class="accordion-content" id="kind-geburt">
+          <label for="kindGewicht">Gewicht (g)</label>
+          <input type="number" id="kindGewicht" placeholder="z.B. 3200">
+
+          <label for="kindGroesse">Größe (cm)</label>
+          <input type="number" id="kindGroesse" placeholder="z.B. 51">
+
+          <label for="kindKopfumfang">Kopfumfang (cm)</label>
+          <input type="number" id="kindKopfumfang" placeholder="z.B. 35">
+
+          <label for="kindAPGAR">
+            APGAR-Werte
+            <span class="info-icon">ℹ️
+              <span class="tooltip">
+                APGAR: Bewertet nach 5 Minuten nach der Geburt den Zustand des Neugeborenen anhand von Atemfrequenz,
+                Herzfrequenz, Muskeltonus, Reflexen und Hautfarbe (0–10 Punkte).
+              </span>
+            </span>
+          </label>
+          <textarea id="kindAPGAR" placeholder="z.B. 9/10 nach 5 Min"></textarea>
+
+          <label for="kindBlutgruppe">Blutgruppe (wenn bestimmt)</label>
+          <input type="text" id="kindBlutgruppe" placeholder="z.B. 0+">
+        </div>
+
+        <div class="accordion-header" data-target="kind-screen">Screening & Untersuchungen</div>
+        <div class="accordion-content" id="kind-screen">
+          <label for="kindScreening">Screening-Ergebnisse</label>
+          <textarea id="kindScreening" placeholder="Stoffwechsel, Hörtest, etc."></textarea>
+        </div>
+      </div>
+
+      <button class="btn" id="saveChildBtn">💾 Speichern</button>
+    </div>
+  </div>
+
+  <!-- ✅ Nur noch externes JS -->
+  <script src="stammdaten.js" defer></script>
+</body>
+</html>

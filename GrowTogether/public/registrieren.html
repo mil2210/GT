@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Registrieren – GrowTogether</title>
+
+<style>
+  body {
+    margin:0;
+    font-family: Inter, sans-serif;
+    background:#e7d0b9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+  .box {
+    background:white;
+    padding:28px;
+    border-radius:14px;
+    width:350px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.1);
+  }
+  h2 { text-align:center; }
+  input {
+    width:100%;
+    padding:10px;
+    margin-top:12px;
+    border:1px solid #bbb;
+    border-radius:8px;
+  }
+  button {
+    width:100%;
+    padding:12px;
+    background:#d2bba4;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    margin-top:15px;
+    font-weight:700;
+    color:#625548;
+  }
+  a { display:block; text-align:center; margin-top:14px; color:#625548; }
+</style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Konto erstellen</h2>
+
+    <input type="text" id="username" placeholder="Benutzername">
+    <input type="email" id="email" placeholder="E-Mail">
+    <input type="password" id="pass" placeholder="Passwort">
+
+    <button onclick="registerUser()">Registrieren</button>
+    <a href="login.html">Schon ein Konto? Hier einloggen</a>
+  </div>
+
+
+  <script src="registrieren.js"></script>
+
+</body>
+</html>

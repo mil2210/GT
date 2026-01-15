@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Grow Together – Dokumente</title>
+
+  <style>
+    :root {
+      --baby:#e7d0b9;
+      --mama:#d2bba4;
+      --schrift:#625548;
+      --glass: rgba(255,255,255,0.45);
+      --accent: #bfa68f;
+      --bg: linear-gradient(135deg, #fffaf7 0%, #f7f0e8 100%);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--schrift);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 580px;
+      padding: 32px;
+      border-radius: 28px;
+      background: var(--glass);
+      backdrop-filter: blur(16px);
+      box-shadow: 0 24px 48px rgba(0,0,0,0.1);
+    }
+
+    h1, h2 { text-align: center; }
+
+    p { text-align: center; margin-bottom: 24px; }
+
+    .upload-area {
+      background: linear-gradient(135deg, rgba(231,208,185,0.7), rgba(210,187,164,0.7));
+      border-radius: 22px;
+      padding: 26px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .upload-area.dragover {
+      background: linear-gradient(135deg, rgba(210,187,164,0.9), rgba(191,166,143,0.9));
+      transform: scale(1.02);
+    }
+
+    .upload-area button {
+      margin-top: 12px;
+      padding: 14px 22px;
+      border: none;
+      border-radius: 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: white;
+      color: var(--schrift);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+      transition: transform 0.2s;
+    }
+
+    .upload-area button:hover {
+      transform: translateY(-2px);
+    }
+
+    input[type="file"] { display: none; }
+
+    .file-list {
+      list-style: none;
+      padding: 0;
+      margin-top: 16px;
+    }
+
+    .file-list li {
+      background: rgba(255,255,255,0.7);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+    }
+
+    .file-info {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .file-meta {
+      font-size: 0.8rem;
+      opacity: 0.75;
+    }
+
+    .actions button {
+      border: none;
+      border-radius: 12px;
+      padding: 6px 10px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      background: white;
+      color: var(--schrift);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+      margin-left: 6px;
+      transition: transform 0.2s;
+    }
+
+    .actions button:hover {
+      transform: translateY(-1px);
+    }
+
+    .actions button.delete {
+      background: #f3e3dc;
+    }
+
+    .upload-btn {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      border: none;
+      border-radius: 18px;
+      font-size: 1rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--baby), var(--mama));
+      color: var(--schrift);
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+
+    .upload-btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .note {
+      margin-top: 16px;
+      font-size: 0.8rem;
+      text-align: center;
+      opacity: 0.7;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-bottom: 16px;
+      color: var(--schrift);
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Image Preview Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.8);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      max-width: 90%;
+      max-height: 90%;
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      position: relative;
+    }
+
+    .modal img, .modal embed {
+      max-width: 100%;
+      max-height: 70vh;
+      display: block;
+      margin: 0 auto;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 30px;
+      color: var(--schrift);
+      cursor: pointer;
+      background: white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <div style="position: fixed; top: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 1200px; z-index: 999; background: linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.85)); border-radius: 14px; padding: 12px 20px; box-shadow: 0 6px 20px rgba(98,85,72,0.15); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; backdrop-filter: blur(12px);">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <img src="Logo-GT_v01.png" alt="Logo" style="
+  height: 56px;
+  filter: drop-shadow(0 3px 6px rgba(0,0,0,0.25));
+">
+
+      <strong style="color:#625548; font-size: 14px;">Grow Together</strong>
+    </div>
+    
+    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+      <a href="startseite.html" style="color: #625548; text-decoration: none; padding: 6px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; font-weight: 600; font-size: 13px;">🏠 Startseite</a>
+      <a href="kalender.html" style="color: #625548; text-decoration: none; padding: 6px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; font-weight: 600; font-size: 13px;">📅 Kalender</a>
+      <a href="stammdaten.html" style="color: #625548; text-decoration: none; padding: 6px 12px; background: rgba(255,255,255,0.7); border-radius: 8px; font-weight: 600; font-size: 13px;">📋 Stammdaten</a>
+      <a href="dokumente.html" style="color: #625548; text-decoration: none; padding: 6px 12px; background: linear-gradient(135deg, #d2bba4, #e7d0b9); border-radius: 8px; font-weight: 600; font-size: 13px; box-shadow: 0 3px 10px rgba(98,85,72,0.12);">📄 Dokumente</a>
+    </div>
+    
+    <button onclick="logout()" style="background: transparent; border: 1px solid #625548; color: #625548; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">Abmelden</button>
+  </div>
+
+  <div class="card" style="margin-top: 80px;">
+    <h1>📄 Dokumente</h1>
+    <p>Deine wichtigen Unterlagen für <strong>Grow Together</strong>.</p>
+
+    <div class="upload-area" id="uploadArea">
+      <div style="font-size:2rem">📄</div>
+      <strong>Dateien hinzufügen</strong><br>
+      <small>Drag & Drop oder</small><br>
+      <button type="button" id="selectBtn">Dateien auswählen</button>
+      <input type="file" id="fileInput" multiple accept=".pdf,.jpg,.jpeg,.png" />
+    </div>
+
+    <ul class="file-list" id="fileList"></ul>
+
+    <button class="upload-btn" id="uploadBtn">Dokumente speichern</button>
+
+    <h2>Gespeicherte Dokumente</h2>
+    <ul class="file-list" id="uploadedList"></ul>
+
+    <div class="note">🔒 Privat & sicher gespeichert</div>
+  </div>
+
+  <!-- Modal für Dokument-Vorschau -->
+  <div class="modal" id="previewModal">
+    <div class="modal-content">
+      <span class="close-modal" id="closeModal">&times;</span>
+      <div id="previewContent"></div>
+    </div>
+  </div>
+
+  <script src="dokumente.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+/* Accordion Header (Anzeigen / Ausblenden) */
+.accordion-header {
+    background: linear-gradient(180deg, #d2bba4, #e7d0b9);
+    padding: 12px 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    margin: 10px 0;
+    color: #625548;
+    font-weight: 600;
+    box-shadow: 0 4px 12px rgba(98,85,72,0.15);
+    transition: all 0.25s ease;
+    user-select: none;
+}
+
+.accordion-header:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 18px rgba(98,85,72,0.2);
+}
+
+/* Accordion Content */
+.accordion-content {
+    padding: 10px 0;
+    animation: fadeIn 0.3s ease;
+}
+
+/* Sanfter Einblend-Effekt */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

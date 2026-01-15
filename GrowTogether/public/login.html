@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Login – GrowTogether</title>
+
+<style>
+  body {
+    margin:0;
+    font-family: Inter, sans-serif;
+    background:#e7d0b9;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+  }
+  .box {
+    background:white;
+    padding:28px;
+    border-radius:14px;
+    width:350px;
+    box-shadow:0 6px 20px rgba(0,0,0,0.1);
+  }
+  input {
+    width:100%;
+    padding:10px;
+    border-radius:8px;
+    margin-top:12px;
+  }
+  button {
+    width:100%;
+    padding:12px;
+    margin-top:16px;
+    background:#d2bba4;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    font-weight:700;
+    color:#625548;
+  }
+  a { display:block; text-align:center; margin-top:14px; color:#625548; }
+</style>
+</head>
+
+<body>
+  <div class="box">
+    <h2>Login</h2>
+
+    <input type="email" id="email" placeholder="E-Mail">
+    <input type="password" id="pass" placeholder="Passwort">
+
+    <button onclick="login()">Login</button>
+    <a href="registrieren.html">Noch kein Konto? Registrieren</a>
+  </div>
+
+<script>
+      async function login() {
+          const email = document.getElementById("email").value.trim();
+          const pass = document.getElementById("pass").value;
+
+          const r = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password: pass })
+          });
+
+          if (!r.ok) {
+              const txt = await r.text().catch(()=> "");
+              alert("Login fehlgeschlagen\n" + txt);
+              return;
+          }
+
+          const data = await r.json();
+          localStorage.setItem("gt_token", data.token);
+          localStorage.setItem("gt_loggedin", data.email);
+          window.location.href = "startseite.html";
+      }
+  </script>
+
+</body>
+</html>
