@@ -1,4 +1,4 @@
-Wie man das Projekt mit dem Server startet:
+cd Wie man das Projekt mit dem Server startet:
 
 1. Projektordner öffnen
 2.Terminal unten links öffnen oder oben links in der leiste neben Run "..." drücken und auf new Terminal
