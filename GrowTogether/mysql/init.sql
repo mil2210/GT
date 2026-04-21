@@ -80,6 +80,7 @@ CREATE TABLE IF NOT EXISTS documents (
     filename VARCHAR(255) NOT NULL,
     filepath VARCHAR(255) NOT NULL,   -- Pfad auf dem Server
     filesize INT,                     -- Größe in Bytes
+    file_data LONGBLOB,               -- Base64-kodierter Dateiinhalt
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );

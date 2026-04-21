@@ -443,7 +443,7 @@ app.get("/api/docs", auth, async (req, res) => {
     }
 });
 
-// Erwartet: { docs: [{ name, size_bytes, ... }] } -> wir speichern Metadaten
+// Erwartet: { docs: [{ name, size_bytes, file_data (base64), ... }] }
 app.post("/api/docs", auth, async (req, res) => {
     try {
         const { docs } = req.body || {};
@@ -452,14 +452,15 @@ app.post("/api/docs", auth, async (req, res) => {
         for (const d of docs) {
             const filename = d.name || "file";
             const filesize = Number(d.size_bytes || 0) || 0;
+            const file_data = d.file_data || null; // Base64 string
 
-            // Da du keinen echten Upload machst, setzen wir einen "virtuellen" Pfad
+            // Virtueller Pfad
             const filepath = `/virtual/${Date.now()}_${filename}`;
 
             await pool.query(
-                `INSERT INTO documents (user_id, filename, filepath, filesize)
-         VALUES (?,?,?,?)`,
-                [req.user.userId, filename, filepath, filesize]
+                `INSERT INTO documents (user_id, filename, filepath, filesize, file_data)
+         VALUES (?,?,?,?,?)`,
+                [req.user.userId, filename, filepath, filesize, file_data]
             );
         }
 
@@ -477,6 +478,69 @@ app.delete("/api/docs/:id", auth, async (req, res) => {
             req.user.userId
         ]);
         res.json({ ok: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "db error" });
+    }
+});
+
+// Download/View Endpoint
+app.get("/api/docs/:id/file", auth, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT filename, file_data FROM documents WHERE id = ? AND user_id = ?",
+            [req.params.id, req.user.userId]
+        );
+
+        if (!rows.length) return res.status(404).json({ error: "not found" });
+
+        const { filename, file_data } = rows[0];
+
+        if (!file_data) {
+            return res.status(400).json({ error: "no file data" });
+        }
+
+        // file_data ist ein Buffer/base64 string
+        const buffer = Buffer.from(file_data.toString(), 'base64');
+        
+        res.set('Content-Disposition', `attachment; filename="${filename}"`);
+        res.set('Content-Type', 'application/octet-stream');
+        res.send(buffer);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "db error" });
+    }
+});
+
+// Preview Endpoint (returns base64 for inline viewing)
+app.get("/api/docs/:id/preview", auth, async (req, res) => {
+    try {
+        const [rows] = await pool.query(
+            "SELECT filename, file_data FROM documents WHERE id = ? AND user_id = ?",
+            [req.params.id, req.user.userId]
+        );
+
+        if (!rows.length) return res.status(404).json({ error: "not found" });
+
+        const { filename, file_data } = rows[0];
+
+        if (!file_data) {
+            return res.status(400).json({ error: "no file data" });
+        }
+
+        // Determine MIME type based on extension
+        let mimeType = "application/octet-stream";
+        if (filename.endsWith(".pdf")) mimeType = "application/pdf";
+        else if (filename.endsWith(".jpg") || filename.endsWith(".jpeg")) mimeType = "image/jpeg";
+        else if (filename.endsWith(".png")) mimeType = "image/png";
+        else if (filename.endsWith(".gif")) mimeType = "image/gif";
+        else if (filename.endsWith(".webp")) mimeType = "image/webp";
+
+        res.json({
+            filename,
+            mimeType,
+            data: file_data.toString() // base64 string
+        });
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "db error" });

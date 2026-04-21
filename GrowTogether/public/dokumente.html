@@ -119,10 +119,21 @@
 
     .actions button:hover {
       transform: translateY(-1px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    }
+
+    .actions button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
     }
 
     .actions button.delete {
       background: #f3e3dc;
+    }
+
+    .actions button.delete:hover {
+      background: #ead4c7;
     }
 
     .upload-btn {

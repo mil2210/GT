@@ -95,19 +95,85 @@ function renderSelected() {
 }
 
 function openPreviewInfo(doc) {
-  // Da wir aktuell nur Metadaten speichern, zeigen wir Info im Modal.
-  previewContent.innerHTML = `
-    <div style="text-align:center">
-      <h3 style="margin:0 0 8px">Dokument</h3>
-      <p style="margin:0 0 10px">${escapeHtml(doc.name || doc.filename || "Dokument")}</p>
-      <p style="margin:0;opacity:.8">${fmtBytes(doc.size_bytes || doc.filesize || 0)}</p>
-      <p style="margin-top:12px;opacity:.75;font-size:.9rem">
-        (Hinweis: Aktuell werden nur Metadaten gespeichert. Für echte Vorschau/Download brauchen wir File-Upload oder Base64 in DB.)
-      </p>
-    </div>
-  `;
-  previewModal.style.display = "flex";
+  // Lade die Datei vom Server
+  loadAndPreviewFile(doc.id, doc.filename || doc.name);
 }
+
+async function loadAndPreviewFile(docId, filename) {
+  try {
+    const r = await api(`/api/docs/${encodeURIComponent(docId)}/preview`);
+    if (!r) return;
+
+    if (!r.ok) {
+      previewContent.innerHTML = `<p style="color:red">Fehler beim Laden: ${r.status}</p>`;
+      previewModal.style.display = "flex";
+      return;
+    }
+
+    const { mimeType, data } = await r.json();
+    const dataUri = `data:${mimeType};base64,${data}`;
+
+    // Display based on type
+    if (mimeType.startsWith("image/")) {
+      previewContent.innerHTML = `<img src="${dataUri}" alt="Preview" style="max-width:100%; max-height:70vh; border-radius:8px;">`;
+    } else if (mimeType === "application/pdf") {
+      previewContent.innerHTML = `
+        <div style="text-align:center;">
+          <p style="margin-bottom:12px;color:#625548;font-weight:600;">📄 PDF-Vorschau</p>
+          <embed src="${dataUri}" type="application/pdf" width="100%" height="500px" style="border-radius:8px;">
+        </div>
+      `;
+    } else {
+      previewContent.innerHTML = `
+        <div style="text-align:center;padding:20px;">
+          <p style="color:#625548;margin-bottom:12px;">📄 ${escapeHtml(filename)}</p>
+          <p style="opacity:0.7;margin-bottom:16px;">Dateivorschau nicht verfügbar</p>
+          <button onclick="downloadFile(${docId}, '${escapeHtml(filename)}')" style="
+            padding:10px 20px;
+            border:none;
+            border-radius:12px;
+            background:linear-gradient(135deg, #e7d0b9, #d2bba4);
+            color:#625548;
+            cursor:pointer;
+            font-weight:600;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+          ">⬇️ Herunterladen</button>
+        </div>
+      `;
+    }
+
+    previewModal.style.display = "flex";
+  } catch (e) {
+    console.error(e);
+    previewContent.innerHTML = `<p style="color:red">Fehler beim Laden der Vorschau</p>`;
+    previewModal.style.display = "flex";
+  }
+}
+
+window.downloadFile = async function(docId, filename) {
+  try {
+    const r = await api(`/api/docs/${encodeURIComponent(docId)}/file`);
+    if (!r) return;
+
+    if (!r.ok) {
+      alert("Download fehlgeschlagen");
+      return;
+    }
+
+    const blob = await r.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    console.error(e);
+    alert("Fehler beim Download");
+  }
+};
 
 function closePreview() {
   previewModal.style.display = "none";
@@ -197,12 +263,18 @@ function renderUploaded(docs) {
         <span class="file-meta">${size}${created ? " • " + escapeHtml(created) : ""}</span>
       </div>
       <div class="actions">
-        <button type="button" data-preview="${d.id}">Ansehen</button>
-        <button class="delete" type="button" data-del="${d.id}">Löschen</button>
+        <button type="button" data-preview="${d.id}">👁️ Ansehen</button>
+        <button type="button" data-download="${d.id}" data-filename="${escapeHtml(name)}">⬇️ Download</button>
+        <button class="delete" type="button" data-del="${d.id}">🗑️ Löschen</button>
       </div>
     `;
 
     li.querySelector("[data-preview]").addEventListener("click", () => openPreviewInfo(d));
+    
+    li.querySelector("[data-download]").addEventListener("click", async () => {
+      await downloadFile(d.id, d.filename || d.name);
+    });
+    
     li.querySelector("[data-del]").addEventListener("click", async () => {
       if (!confirm("Dokument wirklich löschen?")) return;
       const rr = await api(`/api/docs/${encodeURIComponent(d.id)}`, { method: "DELETE" });
@@ -225,30 +297,68 @@ uploadBtn.addEventListener("click", async () => {
     return;
   }
 
-  // Aktuelles Backend speichert Metadaten (name + size)
-  const docs = selectedFiles.map(f => ({
-    name: f.name,
-    size_bytes: f.size
-  }));
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = "⏳ Wird hochgeladen...";
 
-  const r = await api("/api/docs", {
-    method: "POST",
-    body: JSON.stringify({ docs })
-  });
+  try {
+    // Konvertiere Dateien zu Base64
+    const docs = [];
+    for (const f of selectedFiles) {
+      const file_data = await fileToBase64(f);
+      docs.push({
+        name: f.name,
+        size_bytes: f.size,
+        file_data
+      });
+    }
 
-  if (!r) return;
+    const r = await api("/api/docs", {
+      method: "POST",
+      body: JSON.stringify({ docs })
+    });
 
-  if (!r.ok) {
-    const t = await r.text().catch(() => "");
-    alert("Speichern fehlgeschlagen: " + t);
-    return;
+    if (!r) {
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Dokumente speichern";
+      return;
+    }
+
+    if (!r.ok) {
+      const t = await r.text().catch(() => "");
+      alert("Speichern fehlgeschlagen: " + t);
+      uploadBtn.disabled = false;
+      uploadBtn.textContent = "Dokumente speichern";
+      return;
+    }
+
+    // Reset selection + reload
+    selectedFiles = [];
+    renderSelected();
+    await loadUploaded();
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Dokumente speichern";
+  } catch (e) {
+    console.error(e);
+    alert("Fehler beim Upload: " + e.message);
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = "Dokumente speichern";
   }
-
-  // Reset selection + reload
-  selectedFiles = [];
-  renderSelected();
-  await loadUploaded();
 });
+
+// Hilfsfunktion zum Konvertieren von Dateien zu Base64
+function fileToBase64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result;
+      // Extrahiere den Base64-Teil nach dem Komma
+      const base64 = result.split(',')[1];
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 // Init
 renderSelected();
