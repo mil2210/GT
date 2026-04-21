@@ -129,10 +129,12 @@ function numOrNull(id) {
 async function loadAll() {
   const rm = await api("/api/profile/mother");
   const rc = await api("/api/profile/child");
-  if (!rm || !rc) return;
+  const rf = await api("/api/profile/father");
+  if (!rm || !rc || !rf) return;
 
   const mother = await rm.json();
   const child = await rc.json();
+  const father = await rf.json();
 
   // mother -> inputs
   if (mother) {
@@ -148,6 +150,17 @@ async function loadAll() {
     if (mother.previous_pregnancies != null) document.getElementById("mutterFruehereSS").value = mother.previous_pregnancies;
     if (mother.profession != null) document.getElementById("mutterBeruf").value = mother.profession;
     if (mother.risks != null) document.getElementById("mutterRisiken").value = mother.risks;
+  }
+
+  // father -> inputs
+  if (father) {
+    if (father.name != null) document.getElementById("vaterName").value = father.name;
+    if (father.birth_date != null) document.getElementById("vaterGebDatum").value = father.birth_date;
+    if (father.address != null) document.getElementById("vaterAdresse").value = father.address;
+    if (father.contact != null) document.getElementById("vaterKontakt").value = father.contact;
+    if (father.profession != null) document.getElementById("vaterBeruf").value = father.profession;
+    if (father.allergies != null) document.getElementById("vaterAllergien").value = father.allergies;
+    if (father.medications != null) document.getElementById("vaterMedikamente").value = father.medications;
   }
 
   // child -> inputs
@@ -228,6 +241,31 @@ async function saveChild() {
   alert("Kind-Stammdaten gespeichert ✅");
 }
 
+async function saveFather() {
+  const geb = val("vaterGebDatum").trim();
+
+  // ✅ Vater ab 1940 (realistisch)
+  if (!assertBirthdate(geb, "1940-01-01")) {
+    alert("❌ Vater-Geburtsdatum ist unrealistisch (min 1940, max heute).");
+    return;
+  }
+
+  const payload = {
+    name: val("vaterName").trim(),
+    birth_date: geb || null,
+    address: val("vaterAdresse").trim(),
+    contact: val("vaterKontakt").trim(),
+    profession: val("vaterBeruf").trim(),
+    allergies: val("vaterAllergien").trim(),
+    medications: val("vaterMedikamente").trim()
+  };
+
+  const r = await api("/api/profile/father", { method: "PUT", body: JSON.stringify(payload) });
+  if (!r) return;
+  if (!r.ok) return alert("Fehler beim Speichern (Vater)");
+  alert("Vater-Stammdaten gespeichert ✅");
+}
+
 // ---------- Accordion + Init ----------
 window.addEventListener("DOMContentLoaded", async () => {
   // Logout button
@@ -252,12 +290,15 @@ window.addEventListener("DOMContentLoaded", async () => {
   // ✅ Live constraints (ohne Spam)
   digitsOnly("mutterVersicherungsNr");
   limitDateField("mutterGebDatum", "1940-01-01");
+  limitDateField("vaterGebDatum", "1940-01-01");
   limitDateField("kindGebDatum", "2000-01-01");
 
   // Save Buttons
   const saveMotherBtn = document.getElementById("saveMotherBtn");
+  const saveFatherBtn = document.getElementById("saveFatherBtn");
   const saveChildBtn = document.getElementById("saveChildBtn");
   if (saveMotherBtn) saveMotherBtn.addEventListener("click", saveMother);
+  if (saveFatherBtn) saveFatherBtn.addEventListener("click", saveFather);
   if (saveChildBtn) saveChildBtn.addEventListener("click", saveChild);
 
   await loadAll();

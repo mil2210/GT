@@ -348,6 +348,80 @@ app.put("/api/profile/child", auth, async (req, res) => {
     }
 });
 
+// ---------------- FATHER DATA ----------------
+app.get("/api/profile/father", auth, async (req, res) => {
+    try {
+        const [rows] = await pool.query("SELECT * FROM father_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
+        res.json(rows[0] || null);
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "db error" });
+    }
+});
+
+app.put("/api/profile/father", auth, async (req, res) => {
+    try {
+        const d = req.body || {};
+
+        const payload = {
+            name: d.name || d.vaterName || null,
+            birth_date: d.birth_date || d.vaterGebDatum || null,
+            address: d.address || d.vaterAdresse || null,
+            contact: d.contact || d.vaterKontakt || null,
+            profession: d.profession || d.vaterBeruf || null,
+            allergies: d.allergies || d.vaterAllergien || null,
+            medications: d.medications || d.vaterMedikamente || null
+        };
+
+        const [rows] = await pool.query("SELECT id FROM father_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
+
+        if (rows.length) {
+            await pool.query(
+                `UPDATE father_data SET
+           name=?,
+           birth_date=?,
+           address=?,
+           contact=?,
+           profession=?,
+           allergies=?,
+           medications=?
+         WHERE user_id=?`,
+                [
+                    payload.name,
+                    payload.birth_date,
+                    payload.address,
+                    payload.contact,
+                    payload.profession,
+                    payload.allergies,
+                    payload.medications,
+                    req.user.userId
+                ]
+            );
+        } else {
+            await pool.query(
+                `INSERT INTO father_data
+         (user_id, name, birth_date, address, contact, profession, allergies, medications)
+         VALUES (?,?,?,?,?,?,?,?)`,
+                [
+                    req.user.userId,
+                    payload.name,
+                    payload.birth_date,
+                    payload.address,
+                    payload.contact,
+                    payload.profession,
+                    payload.allergies,
+                    payload.medications
+                ]
+            );
+        }
+
+        res.json({ ok: true });
+    } catch (e) {
+        console.error(e);
+        res.status(500).json({ error: "db error" });
+    }
+});
+
 // ---------------- DOCUMENTS (passt zu deiner SQL: filename, filepath, filesize) ----------------
 // Dein Frontend sendet aktuell Base64 -> das passt NICHT zu deiner SQL.
 // Lösung hier: wir speichern nur Metadaten und geben sie zurück.

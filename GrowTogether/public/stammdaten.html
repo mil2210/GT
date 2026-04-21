@@ -254,6 +254,45 @@
       <button class="btn" id="saveMotherBtn">💾 Speichern</button>
     </div>
 
+    <!-- Vater -->
+    <div class="card">
+      <h2>👨 Stammdaten des Vaters</h2>
+
+      <div class="accordion-wrapper">
+        <div class="accordion-header" data-target="vater-basis">Basisdaten</div>
+        <div class="accordion-content" id="vater-basis">
+          <label for="vaterName">Name</label>
+          <input type="text" id="vaterName" placeholder="Vor- und Nachname">
+
+          <label for="vaterGebDatum">Geburtsdatum</label>
+          <input type="date" id="vaterGebDatum" min="1940-01-01">
+
+          <label for="vaterAdresse">Adresse</label>
+          <input type="text" id="vaterAdresse" placeholder="Straße, PLZ, Ort">
+
+          <label for="vaterKontakt">Kontakt (Telefon/Email)</label>
+          <input type="text" id="vaterKontakt" placeholder="z.B. +43 123 456789 oder mail@example.com">
+        </div>
+
+        <div class="accordion-header" data-target="vater-med">Medizinische Daten</div>
+        <div class="accordion-content" id="vater-med">
+          <label for="vaterAllergien">Allergien</label>
+          <textarea id="vaterAllergien" placeholder="z.B. Penicillin, Nüsse, Pollen..."></textarea>
+
+          <label for="vaterMedikamente">Medikamente</label>
+          <textarea id="vaterMedikamente" placeholder="Welche Medikamente werden regelmäßig eingenommen?"></textarea>
+        </div>
+
+        <div class="accordion-header" data-target="vater-beruf">Berufliches</div>
+        <div class="accordion-content" id="vater-beruf">
+          <label for="vaterBeruf">Beruf / mögliche Risiken am Arbeitsplatz</label>
+          <textarea id="vaterBeruf" placeholder="z.B. Bürojob, Handwerk, Chemielabor..."></textarea>
+        </div>
+      </div>
+
+      <button class="btn" id="saveFatherBtn">💾 Speichern</button>
+    </div>
+
     <!-- Kind -->
     <div class="card">
       <h2>👶 Stammdaten des Kindes</h2>
