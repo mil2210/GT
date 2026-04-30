@@ -29,8 +29,9 @@ if (!currentUser) {
 }
 
 // Logout-Funktion (Token auch löschen!)
-function logout() {
-    if (confirm("Möchtest du dich wirklich abmelden?")) {
+async function logout() {
+    const confirmed = await confirmLogout();
+    if (confirmed) {
         localStorage.removeItem("gt_loggedin");
         localStorage.removeItem("gt_token");
         window.location.href = "login.html";
@@ -77,7 +78,7 @@ async function upsertEventToDb(ev) {
     });
     if (!r) return false;
     if (!r.ok) {
-        alert("Fehler beim Speichern in der Datenbank");
+        notifyError("Fehler beim Speichern in der Datenbank");
         return false;
     }
     return true;
@@ -87,7 +88,7 @@ async function deleteEventFromDb(id) {
     const r = await api("/api/events/" + encodeURIComponent(id), { method: "DELETE" });
     if (!r) return false;
     if (!r.ok) {
-        alert("Fehler beim Löschen in der Datenbank");
+        notifyError("Fehler beim Löschen in der Datenbank");
         return false;
     }
     return true;
@@ -248,7 +249,7 @@ function openModal(date, eventId) {
         const tag = document.getElementById('tag').value;
 
         if (!title) {
-            alert('Bitte einen Titel eingeben');
+            notifyWarning('Bitte einen Titel eingeben');
             return;
         }
 
@@ -283,14 +284,15 @@ function openModal(date, eventId) {
 
     if (existing) {
         document.getElementById('deleteBtn').addEventListener('click', async () => {
-            if (confirm('Wirklich löschen?')) {
-                const ok = await deleteEventFromDb(existing.id);
-                if (!ok) return;
+            const confirmed = await confirmDelete("Event");
+            if (!confirmed) return;
+            const ok = await deleteEventFromDb(existing.id);
+            if (!ok) return;
 
-                events = events.filter(e => e.id !== existing.id);
-                saveUI();
-                render();
-                closeModal();
+            events = events.filter(e => e.id !== existing.id);
+            saveUI();
+            render();
+            closeModal();
             }
         });
     }

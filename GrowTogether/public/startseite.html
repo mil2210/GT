@@ -157,6 +157,7 @@
     </footer>
 </div>
 
+<script src="notifications.js"></script>
 <script src="pop.js"></script>
 <script src="startseite.js"></script>
 
@@ -171,8 +172,9 @@
         const btn = document.getElementById("logoutBtn");
         if (!btn) return;
 
-        btn.addEventListener("click", () => {
-            if (confirm("Möchtest du dich wirklich abmelden?")) {
+        btn.addEventListener("click", async () => {
+            const confirmed = await confirmLogout();
+            if (confirmed) {
                 localStorage.removeItem("gt_loggedin");
                 localStorage.removeItem("gt_token");
                 window.location.href = "login.html";

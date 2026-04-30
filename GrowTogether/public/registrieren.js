@@ -4,7 +4,7 @@ async function registerUser() {
     const pass = document.getElementById("pass").value;
 
     if (!username || !email || !pass) {
-        alert("Bitte alle Felder ausfüllen!");
+        notifyWarning("Bitte alle Felder ausfüllen!");
         return;
     }
 
@@ -15,17 +15,17 @@ async function registerUser() {
     });
 
     if (r.status === 409) {
-        alert("Diese E-Mail ist bereits registriert!");
+        notifyError("Diese E-Mail ist bereits registriert!");
         return;
     }
 
     if (!r.ok) {
-        // zeigt dir die echte Fehlermeldung vom Server
-        const txt = await r.text().catch(() => "");
-        alert("Registrierung fehlgeschlagen!\n" + txt);
+        notifyError("Registrierung fehlgeschlagen!");
         return;
     }
 
-    alert("Registrierung erfolgreich!");
-    window.location.href = "login.html";
+    notifySuccess("Registrierung erfolgreich!");
+    setTimeout(() => {
+        window.location.href = "login.html";
+    }, 1000);
 }

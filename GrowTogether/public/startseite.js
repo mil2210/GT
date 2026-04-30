@@ -7,8 +7,9 @@ if (!user || !token) {
 }
 
 // Global verfügbar machen (für onclick)
-window.logout = function logout() {
-    if (confirm("Möchtest du dich wirklich abmelden?")) {
+window.logout = async function logout() {
+    const confirmed = await confirmLogout();
+    if (confirmed) {
         localStorage.removeItem("gt_loggedin");
         localStorage.removeItem("gt_token");
         window.location.href = "login.html";

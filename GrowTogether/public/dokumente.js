@@ -24,8 +24,9 @@ async function api(path, opts = {}) {
 }
 
 // Logout muss GLOBAL sein, weil HTML onclick="logout()" nutzt
-window.logout = function logout() {
-  if (confirm("Möchtest du dich wirklich abmelden?")) {
+window.logout = async function logout() {
+  const confirmed = await confirmLogout();
+  if (confirmed) {
     localStorage.removeItem("gt_loggedin");
     localStorage.removeItem("gt_token");
     window.location.href = "login.html";
@@ -156,7 +157,7 @@ window.downloadFile = async function(docId, filename) {
     if (!r) return;
 
     if (!r.ok) {
-      alert("Download fehlgeschlagen");
+      notifyError("Download fehlgeschlagen");
       return;
     }
 
@@ -171,7 +172,7 @@ window.downloadFile = async function(docId, filename) {
     URL.revokeObjectURL(url);
   } catch (e) {
     console.error(e);
-    alert("Fehler beim Download");
+    notifyError("Fehler beim Download");
   }
 };
 
@@ -276,12 +277,12 @@ function renderUploaded(docs) {
     });
     
     li.querySelector("[data-del]").addEventListener("click", async () => {
-      if (!confirm("Dokument wirklich löschen?")) return;
+      const confirmed = await confirmDelete("Dokument");
+      if (!confirmed) return;
       const rr = await api(`/api/docs/${encodeURIComponent(d.id)}`, { method: "DELETE" });
       if (!rr) return;
       if (!rr.ok) {
-        const t = await rr.text().catch(() => "");
-        alert("Löschen fehlgeschlagen: " + t);
+        notifyError("Löschen fehlgeschlagen");
         return;
       }
       await loadUploaded();
@@ -293,7 +294,7 @@ function renderUploaded(docs) {
 
 uploadBtn.addEventListener("click", async () => {
   if (selectedFiles.length === 0) {
-    alert("Bitte zuerst Dateien auswählen oder per Drag & Drop hinzufügen.");
+    notifyWarning("Bitte zuerst Dateien auswählen oder per Drag & Drop hinzufügen.");
     return;
   }
 
@@ -328,15 +329,14 @@ uploadBtn.addEventListener("click", async () => {
       try {
         const errorData = await r.json();
         if (errorData.error === "duplicate files" && errorData.duplicates) {
-          errorMsg = "Die folgenden Dateien existieren bereits:\n\n" + errorData.duplicates.join("\n");
+          errorMsg = "Die folgenden Dateien existieren bereits: " + errorData.duplicates.join(", ");
         } else if (errorData.message) {
           errorMsg = errorData.message;
         }
       } catch (e) {
-        const t = await r.text().catch(() => "");
-        if (t) errorMsg = t;
+        // ignore parsing error
       }
-      alert(errorMsg);
+      notifyError(errorMsg);
       uploadBtn.disabled = false;
       uploadBtn.textContent = "Dokumente speichern";
       return;
@@ -350,7 +350,7 @@ uploadBtn.addEventListener("click", async () => {
     uploadBtn.textContent = "Dokumente speichern";
   } catch (e) {
     console.error(e);
-    alert("Fehler beim Upload: " + e.message);
+    notifyError("Fehler beim Upload");
     uploadBtn.disabled = false;
     uploadBtn.textContent = "Dokumente speichern";
   }

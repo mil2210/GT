@@ -54,6 +54,7 @@
     <a href="registrieren.html">Noch kein Konto? Registrieren</a>
   </div>
 
+<script src="notifications.js"></script>
 <script>
       async function login() {
           const email = document.getElementById("email").value.trim();
@@ -67,14 +68,17 @@
 
           if (!r.ok) {
               const txt = await r.text().catch(()=> "");
-              alert("Login fehlgeschlagen\n" + txt);
+              notifyError("Login fehlgeschlagen");
               return;
           }
 
           const data = await r.json();
           localStorage.setItem("gt_token", data.token);
           localStorage.setItem("gt_loggedin", data.email);
-          window.location.href = "startseite.html";
+          notifySuccess("Login erfolgreich!");
+          setTimeout(() => {
+              window.location.href = "startseite.html";
+          }, 500);
       }
   </script>
 

@@ -30,8 +30,9 @@ if (!currentUser || !getToken()) {
 }
 
 // ---------- Logout ----------
-function logout() {
-  if (confirm("Möchtest du dich wirklich abmelden?")) {
+async function logout() {
+  const confirmed = await confirmLogout();
+  if (confirmed) {
     localStorage.removeItem("gt_loggedin");
     localStorage.removeItem("gt_token");
     window.location.href = "login.html";
@@ -89,12 +90,12 @@ function limitDateField(id, minISO) {
     if (!isISODate(v)) return;
 
     if (v < el.min) {
-      alert(`⚠️ Bitte ein realistisches Datum eingeben (ab ${el.min}).`);
+      notifyWarning(`Bitte ein realistisches Datum eingeben (ab ${el.min}).`);
       el.value = "";
       return;
     }
     if (v > el.max) {
-      alert(`⚠️ Datum darf nicht in der Zukunft liegen (max ${el.max}).`);
+      notifyWarning(`Datum darf nicht in der Zukunft liegen (max ${el.max}).`);
       el.value = "";
       return;
     }
@@ -185,11 +186,11 @@ async function saveMother() {
 
   // ✅ realistischer: Mutter ab 1940 (kannst du auf 1900 zurückstellen wenn nötig)
   if (!assertBirthdate(geb, "1940-01-01")) {
-    alert("❌ Mutter-Geburtsdatum ist unrealistisch (min 1940, max heute).");
+    notifyWarning("Mutter-Geburtsdatum ist unrealistisch (min 1940, max heute).");
     return;
   }
   if (!assertDigitsOnlyValue(vers)) {
-    alert("❌ Versicherungsnummer darf nur Zahlen enthalten.");
+    notifyWarning("Versicherungsnummer darf nur Zahlen enthalten.");
     return;
   }
 
@@ -210,15 +211,15 @@ async function saveMother() {
 
   const r = await api("/api/profile/mother", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;
-  if (!r.ok) return alert("Fehler beim Speichern (Mutter)");
-  alert("Mutter-Stammdaten gespeichert ✅");
+  if (!r.ok) return notifyError("Fehler beim Speichern (Mutter)");
+  notifySuccess("Mutter-Stammdaten gespeichert!");
 }
 
 async function saveChild() {
   const geb = val("kindGebDatum").trim();
 
   if (!assertBirthdate(geb, "2000-01-01")) {
-    alert("❌ Kind-Geburtsdatum ist unrealistisch (min 2000, max heute).");
+    notifyWarning("Kind-Geburtsdatum ist unrealistisch (min 2000, max heute).");
     return;
   }
 
@@ -237,8 +238,8 @@ async function saveChild() {
 
   const r = await api("/api/profile/child", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;
-  if (!r.ok) return alert("Fehler beim Speichern (Kind)");
-  alert("Kind-Stammdaten gespeichert ✅");
+  if (!r.ok) return notifyError("Fehler beim Speichern (Kind)");
+  notifySuccess("Kind-Stammdaten gespeichert!");
 }
 
 async function saveFather() {
@@ -246,7 +247,7 @@ async function saveFather() {
 
   // ✅ Vater ab 1940 (realistisch)
   if (!assertBirthdate(geb, "1940-01-01")) {
-    alert("❌ Vater-Geburtsdatum ist unrealistisch (min 1940, max heute).");
+    notifyWarning("Vater-Geburtsdatum ist unrealistisch (min 1940, max heute).");
     return;
   }
 
@@ -262,8 +263,8 @@ async function saveFather() {
 
   const r = await api("/api/profile/father", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;
-  if (!r.ok) return alert("Fehler beim Speichern (Vater)");
-  alert("Vater-Stammdaten gespeichert ✅");
+  if (!r.ok) return notifyError("Fehler beim Speichern (Vater)");
+  notifySuccess("Vater-Stammdaten gespeichert!");
 }
 
 // ---------- Accordion + Init ----------
