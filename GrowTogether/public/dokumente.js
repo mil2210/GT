@@ -324,8 +324,19 @@ uploadBtn.addEventListener("click", async () => {
     }
 
     if (!r.ok) {
-      const t = await r.text().catch(() => "");
-      alert("Speichern fehlgeschlagen: " + t);
+      let errorMsg = "Speichern fehlgeschlagen";
+      try {
+        const errorData = await r.json();
+        if (errorData.error === "duplicate files" && errorData.duplicates) {
+          errorMsg = "Die folgenden Dateien existieren bereits:\n\n" + errorData.duplicates.join("\n");
+        } else if (errorData.message) {
+          errorMsg = errorData.message;
+        }
+      } catch (e) {
+        const t = await r.text().catch(() => "");
+        if (t) errorMsg = t;
+      }
+      alert(errorMsg);
       uploadBtn.disabled = false;
       uploadBtn.textContent = "Dokumente speichern";
       return;

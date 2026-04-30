@@ -449,18 +449,44 @@ app.post("/api/docs", auth, async (req, res) => {
         const { docs } = req.body || {};
         if (!Array.isArray(docs) || docs.length === 0) return res.status(400).json({ error: "no docs" });
 
+        const duplicates = [];
+        const toInsert = [];
+
+        // Erst alle Dateien prüfen
         for (const d of docs) {
             const filename = d.name || "file";
             const filesize = Number(d.size_bytes || 0) || 0;
             const file_data = d.file_data || null; // Base64 string
 
-            // Virtueller Pfad
-            const filepath = `/virtual/${Date.now()}_${filename}`;
+            // Überprüfe, ob eine Datei mit diesem Namen bereits existiert
+            const [existing] = await pool.query(
+                "SELECT id FROM documents WHERE user_id = ? AND filename = ?",
+                [req.user.userId, filename]
+            );
 
+            if (existing.length > 0) {
+                duplicates.push(filename);
+            } else {
+                toInsert.push({ filename, filesize, file_data });
+            }
+        }
+
+        // Wenn Duplikate gefunden → Fehler zurückgeben, nichts einfügen
+        if (duplicates.length > 0) {
+            return res.status(409).json({ 
+                error: "duplicate files",
+                duplicates: duplicates,
+                message: `Die folgenden Dateien existieren bereits: ${duplicates.join(", ")}`
+            });
+        }
+
+        // Nur einfügen, wenn KEINE Duplikate gefunden wurden
+        for (const item of toInsert) {
+            const filepath = `/virtual/${Date.now()}_${item.filename}`;
             await pool.query(
                 `INSERT INTO documents (user_id, filename, filepath, filesize, file_data)
          VALUES (?,?,?,?,?)`,
-                [req.user.userId, filename, filepath, filesize, file_data]
+                [req.user.userId, item.filename, filepath, item.filesize, item.file_data]
             );
         }
 
