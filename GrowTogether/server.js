@@ -171,6 +171,7 @@ app.delete("/api/events/:id", auth, async (req, res) => {
 app.get("/api/profile/mother", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM mother_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
+        console.log("[DEBUG mother GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
@@ -178,9 +179,12 @@ app.get("/api/profile/mother", auth, async (req, res) => {
     }
 });
 
+
 app.put("/api/profile/mother", auth, async (req, res) => {
     try {
         const d = req.body || {};
+        console.log("[DEBUG mother PUT] payload.birth_date=", d?.birth_date ?? d?.mutterGebDatum ?? null);
+
 
         const payload = {
             name: d.name || d.mutterName || null,
@@ -265,12 +269,14 @@ app.put("/api/profile/mother", auth, async (req, res) => {
 app.get("/api/profile/child", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM child_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
+        console.log("[DEBUG child GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "db error" });
     }
 });
+
 
 app.put("/api/profile/child", auth, async (req, res) => {
     try {
@@ -352,12 +358,14 @@ app.put("/api/profile/child", auth, async (req, res) => {
 app.get("/api/profile/father", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM father_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
+        console.log("[DEBUG father GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
         res.status(500).json({ error: "db error" });
     }
 });
+
 
 app.put("/api/profile/father", auth, async (req, res) => {
     try {

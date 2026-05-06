@@ -293,10 +293,10 @@ function openModal(date, eventId) {
             saveUI();
             render();
             closeModal();
-            }
         });
     }
 }
+
 
 function closeModal() {
     const root = document.getElementById('modalRoot');

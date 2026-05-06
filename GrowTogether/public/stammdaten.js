@@ -79,27 +79,6 @@ function limitDateField(id, minISO) {
 
   el.min = minISO;
   el.max = todayISO();
-
-  el.addEventListener("change", () => {
-    const v = el.value;
-
-    // leer ist ok
-    if (!v) return;
-
-    // wenn nicht komplett gültiges Datum => nix machen
-    if (!isISODate(v)) return;
-
-    if (v < el.min) {
-      notifyWarning(`Bitte ein realistisches Datum eingeben (ab ${el.min}).`);
-      el.value = "";
-      return;
-    }
-    if (v > el.max) {
-      notifyWarning(`Datum darf nicht in der Zukunft liegen (max ${el.max}).`);
-      el.value = "";
-      return;
-    }
-  });
 }
 
 function assertDigitsOnlyValue(value) {
@@ -109,9 +88,12 @@ function assertDigitsOnlyValue(value) {
 
 function assertBirthdate(value, minISO) {
   if (!value) return true;
-  if (!isISODate(value)) return false;
+  if (!isISODate(value)) {
+    return false;
+  }
   const t = todayISO();
-  return value >= minISO && value <= t;
+  const isValid = value >= minISO && value <= t;
+  return isValid;
 }
 
 // ---------- Collect ----------
@@ -127,11 +109,76 @@ function numOrNull(id) {
 }
 
 // ---------- Load from DB ----------
+function resetUI() {
+  // Mother
+  [
+    "mutterName",
+    "mutterGebDatum",
+    "mutterAdresse",
+    "mutterKontakt",
+    "mutterVersicherungsNr",
+    "mutterBlutgruppe",
+    "mutterVorerkrankungen",
+    "mutterAllergien",
+    "mutterMedikamente",
+    "mutterFruehereSS",
+    "mutterBeruf",
+    "mutterRisiken"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  // Father
+  [
+    "vaterName",
+    "vaterGebDatum",
+    "vaterAdresse",
+    "vaterKontakt",
+    "vaterBeruf",
+    "vaterAllergien",
+    "vaterMedikamente"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+
+  // Child
+  [
+    "kindName",
+    "kindGebDatum",
+    "kindGebZeit",
+    "kindGebOrt",
+    "kindGewicht",
+    "kindGroesse",
+    "kindKopfumfang",
+    "kindAPGAR",
+    "kindBlutgruppe",
+    "kindScreening"
+  ].forEach((id) => {
+    const el = document.getElementById(id);
+    if (el) el.value = "";
+  });
+}
+
 async function loadAll() {
+  // Wichtig: UI immer deterministisch machen -> keine "alten" Werte stehen lassen
+  resetUI();
+
   const rm = await api("/api/profile/mother");
   const rc = await api("/api/profile/child");
   const rf = await api("/api/profile/father");
-  if (!rm || !rc || !rf) return;
+
+  if (!rm || !rc || !rf) {
+    notifyWarning("Stammdaten konnten nicht geladen werden.");
+    return;
+  }
+
+  // Falls API fehlschlägt (z.B. DB), UI bleibt deterministisch leer (resetUI bereits ausgeführt)
+  if (!rm.ok || !rc.ok || !rf.ok) {
+    notifyWarning("Stammdaten konnten nicht vollständig geladen werden.");
+    return;
+  }
 
   const mother = await rm.json();
   const child = await rc.json();
@@ -177,11 +224,16 @@ async function loadAll() {
     if (child.blood_group != null) document.getElementById("kindBlutgruppe").value = child.blood_group;
     if (child.screening != null) document.getElementById("kindScreening").value = child.screening;
   }
+
+  if (!mother && !child && !father) {
+    notifyWarning("Noch keine Stammdaten gespeichert.");
+  }
 }
+
 
 // ---------- Save ----------
 async function saveMother() {
-  const geb = val("mutterGebDatum").trim();
+  const geb = val("mutterGebDatum");
   const vers = val("mutterVersicherungsNr").trim();
 
   // ✅ realistischer: Mutter ab 1940 (kannst du auf 1900 zurückstellen wenn nötig)
@@ -216,12 +268,13 @@ async function saveMother() {
 }
 
 async function saveChild() {
-  const geb = val("kindGebDatum").trim();
+  const geb = val("kindGebDatum");
 
-  if (!assertBirthdate(geb, "2000-01-01")) {
-    notifyWarning("Kind-Geburtsdatum ist unrealistisch (min 2000, max heute).");
+  if (!assertBirthdate(geb, "1900-01-01")) {
+    notifyWarning("Kind-Geburtsdatum ist unrealistisch (min 1900, max heute).");
     return;
   }
+
 
   const payload = {
     name: val("kindName").trim(),
@@ -243,7 +296,7 @@ async function saveChild() {
 }
 
 async function saveFather() {
-  const geb = val("vaterGebDatum").trim();
+  const geb = val("vaterGebDatum");
 
   // ✅ Vater ab 1940 (realistisch)
   if (!assertBirthdate(geb, "1940-01-01")) {
@@ -290,9 +343,14 @@ window.addEventListener("DOMContentLoaded", async () => {
 
   // ✅ Live constraints (ohne Spam)
   digitsOnly("mutterVersicherungsNr");
-  limitDateField("mutterGebDatum", "1940-01-01");
-  limitDateField("vaterGebDatum", "1940-01-01");
-  limitDateField("kindGebDatum", "2000-01-01");
+  // Datumfelder werden direkt vom Browser validiert via min/max Attribute
+  const mutterGeb = document.getElementById("mutterGebDatum");
+  const vaterGeb = document.getElementById("vaterGebDatum");
+  const kindGeb = document.getElementById("kindGebDatum");
+  if (mutterGeb) { mutterGeb.min = "1940-01-01"; mutterGeb.max = todayISO(); }
+  if (vaterGeb) { vaterGeb.min = "1940-01-01"; vaterGeb.max = todayISO(); }
+  if (kindGeb) { kindGeb.min = "1900-01-01"; kindGeb.max = todayISO(); }
+
 
   // Save Buttons
   const saveMotherBtn = document.getElementById("saveMotherBtn");
