@@ -221,7 +221,6 @@ async function loadAll() {
   if (child) {
     if (child.name != null) document.getElementById("kindName").value = child.name;
     if (child.birth_date != null) {
-      console.log("[DEBUG loadAll] Setting kindGebDatum to:", child.birth_date);
       document.getElementById("kindGebDatum").value = child.birth_date;
     }
     if (child.birth_time != null) document.getElementById("kindGebZeit").value = child.birth_time;
@@ -243,10 +242,8 @@ async function loadAll() {
 // ---------- Save ----------
 async function saveMother() {
   const geb = val("mutterGebDatum");
-  console.log("[DEBUG saveMother] mutterGebDatum value:", geb);
   const vers = val("mutterVersicherungsNr").trim();
 
-  // ✅ realistischer: Mutter ab 1940 (kannst du auf 1900 zurückstellen wenn nötig)
   if (!assertBirthdate(geb, "1940-01-01")) {
     notifyWarning("Mutter-Geburtsdatum ist unrealistisch (min 1940, max heute).");
     return;
@@ -270,7 +267,6 @@ async function saveMother() {
     profession: val("mutterBeruf").trim(),
     risks: val("mutterRisiken").trim()
   };
-  console.log("[DEBUG saveMother] payload.birth_date:", payload.birth_date);
 
   const r = await api("/api/profile/mother", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;
@@ -279,22 +275,24 @@ async function saveMother() {
 }
 
 async function saveChild() {
-  const gebElement = document.getElementById("kindGebDatum");
-  console.log("[DEBUG saveChild] gebElement found:", !!gebElement);
-  console.log("[DEBUG saveChild] gebElement.value:", gebElement?.value);
-  console.log("[DEBUG saveChild] gebElement.type:", gebElement?.type);
-  
-  const geb = val("kindGebDatum");
-  console.log("[DEBUG saveChild] After val() - geb:", geb, "type:", typeof geb);
+  // Geburtsdatum direkt vom Input-Element lesen
+  const birthDateInput = document.getElementById("kindGebDatum");
+  const birthDate = birthDateInput ? birthDateInput.value : "";
 
-  if (!assertBirthdate(geb, "1900-01-01")) {
+  // Wenn Geburtsdatum vorhanden, validieren
+  if (birthDate && !isISODate(birthDate)) {
+    notifyWarning("Kind-Geburtsdatum muss im Format YYYY-MM-DD sein.");
+    return;
+  }
+
+  if (birthDate && !assertBirthdate(birthDate, "1900-01-01")) {
     notifyWarning("Kind-Geburtsdatum ist unrealistisch (min 1900, max heute).");
     return;
   }
 
   const payload = {
     name: val("kindName").trim(),
-    birth_date: geb || null,
+    birth_date: birthDate || null,  // Direkt der Datumstring oder null
     birth_time: val("kindGebZeit").trim() || null,
     birth_place: val("kindGebOrt").trim(),
     weight: numOrNull("kindGewicht"),
@@ -304,8 +302,6 @@ async function saveChild() {
     blood_group: val("kindBlutgruppe").trim(),
     screening: val("kindScreening").trim()
   };
-  console.log("[DEBUG saveChild] Final payload.birth_date:", payload.birth_date);
-  console.log("[DEBUG saveChild] Sending payload:", payload);
 
   const r = await api("/api/profile/child", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;
@@ -315,9 +311,7 @@ async function saveChild() {
 
 async function saveFather() {
   const geb = val("vaterGebDatum");
-  console.log("[DEBUG saveFather] vaterGebDatum value:", geb);
 
-  // ✅ Vater ab 1940 (realistisch)
   if (!assertBirthdate(geb, "1940-01-01")) {
     notifyWarning("Vater-Geburtsdatum ist unrealistisch (min 1940, max heute).");
     return;
@@ -332,7 +326,6 @@ async function saveFather() {
     allergies: val("vaterAllergien").trim(),
     medications: val("vaterMedikamente").trim()
   };
-  console.log("[DEBUG saveFather] payload.birth_date:", payload.birth_date);
 
   const r = await api("/api/profile/father", { method: "PUT", body: JSON.stringify(payload) });
   if (!r) return;

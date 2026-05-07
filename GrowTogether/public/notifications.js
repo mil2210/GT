@@ -100,7 +100,7 @@ function notifyInfo(message) {
 }
 
 // ========== Confirmation Dialog ==========
-function showConfirmDialog(message, title = "Bestätigung") {
+function showConfirmDialog(message, title = "Bestätigung", confirmButtonText = "Ja, löschen") {
   return new Promise((resolve) => {
     // Erstelle Overlay
     const overlay = document.createElement("div");
@@ -180,7 +180,7 @@ function showConfirmDialog(message, title = "Bestätigung") {
     };
 
     const confirmBtn = document.createElement("button");
-    confirmBtn.textContent = "Ja, löschen";
+    confirmBtn.textContent = confirmButtonText;
     confirmBtn.style.cssText = `
       padding: 10px 20px;
       border: none;
@@ -234,7 +234,8 @@ async function confirmDelete(itemName = "Element") {
 async function confirmLogout() {
   return await showConfirmDialog(
     "Du wirst aus deinem Konto abgemeldet.",
-    "Möchtest du dich wirklich abmelden?"
+    "Möchtest du dich wirklich abmelden?",
+    "Ja, abmelden"
   );
 }
 

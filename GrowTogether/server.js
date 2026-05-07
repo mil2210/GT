@@ -171,7 +171,6 @@ app.delete("/api/events/:id", auth, async (req, res) => {
 app.get("/api/profile/mother", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM mother_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
-        console.log("[DEBUG mother GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
@@ -269,7 +268,6 @@ app.put("/api/profile/mother", auth, async (req, res) => {
 app.get("/api/profile/child", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM child_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
-        console.log("[DEBUG child GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
@@ -281,21 +279,19 @@ app.get("/api/profile/child", auth, async (req, res) => {
 app.put("/api/profile/child", auth, async (req, res) => {
     try {
         const d = req.body || {};
-        console.log("[DEBUG child PUT] incoming payload:", d);
 
         const payload = {
-            name: d.name || d.kindName || null,
-            birth_date: d.birth_date || d.kindGebDatum || null,
-            birth_time: d.birth_time || d.kindGebZeit || null,
-            birth_place: d.birth_place || d.kindGebOrt || null,
-            weight: d.weight ?? d.kindGewicht ?? null,
-            height: d.height ?? d.kindGroesse ?? null,
-            head_circumference: d.head_circumference ?? d.kindKopfumfang ?? null,
-            apgar: d.apgar || d.kindAPGAR || null,
-            blood_group: d.blood_group || d.kindBlutgruppe || null,
-            screening: d.screening || d.kindScreening || null
+            name: d.name || null,
+            birth_date: d.birth_date || null,
+            birth_time: d.birth_time || null,
+            birth_place: d.birth_place || null,
+            weight: d.weight ?? null,
+            height: d.height ?? null,
+            head_circumference: d.head_circumference ?? null,
+            apgar: d.apgar || null,
+            blood_group: d.blood_group || null,
+            screening: d.screening || null
         };
-        console.log("[DEBUG child PUT] processed payload.birth_date=", payload.birth_date);
 
         const [rows] = await pool.query("SELECT id FROM child_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
 
@@ -360,7 +356,6 @@ app.put("/api/profile/child", auth, async (req, res) => {
 app.get("/api/profile/father", auth, async (req, res) => {
     try {
         const [rows] = await pool.query("SELECT * FROM father_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
-        console.log("[DEBUG father GET] user_id=", req.user.userId, "birth_date=", rows[0]?.birth_date ?? null);
         res.json(rows[0] || null);
     } catch (e) {
         console.error(e);
