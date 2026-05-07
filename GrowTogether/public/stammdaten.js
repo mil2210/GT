@@ -193,7 +193,7 @@ async function loadAll() {
   // mother -> inputs
   if (mother) {
     if (mother.name != null) document.getElementById("mutterName").value = mother.name;
-    if (mother.birth_date != null) document.getElementById("mutterGebDatum").value = mother.birth_date;
+    if (mother.birth_date != null) document.getElementById("mutterGebDatum").value = mother.birth_date.substring(0, 10);
     if (mother.address != null) document.getElementById("mutterAdresse").value = mother.address;
     if (mother.contact != null) document.getElementById("mutterKontakt").value = mother.contact;
     if (mother.insurance_number != null) document.getElementById("mutterVersicherungsNr").value = mother.insurance_number;
@@ -209,7 +209,7 @@ async function loadAll() {
   // father -> inputs
   if (father) {
     if (father.name != null) document.getElementById("vaterName").value = father.name;
-    if (father.birth_date != null) document.getElementById("vaterGebDatum").value = father.birth_date;
+    if (father.birth_date != null) document.getElementById("vaterGebDatum").value = father.birth_date.substring(0, 10);
     if (father.address != null) document.getElementById("vaterAdresse").value = father.address;
     if (father.contact != null) document.getElementById("vaterKontakt").value = father.contact;
     if (father.profession != null) document.getElementById("vaterBeruf").value = father.profession;
@@ -221,7 +221,7 @@ async function loadAll() {
   if (child) {
     if (child.name != null) document.getElementById("kindName").value = child.name;
     if (child.birth_date != null) {
-      document.getElementById("kindGebDatum").value = child.birth_date;
+      document.getElementById("kindGebDatum").value = child.birth_date.substring(0, 10);
     }
     if (child.birth_time != null) document.getElementById("kindGebZeit").value = child.birth_time;
     if (child.birth_place != null) document.getElementById("kindGebOrt").value = child.birth_place;
