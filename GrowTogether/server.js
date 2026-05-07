@@ -281,6 +281,7 @@ app.get("/api/profile/child", auth, async (req, res) => {
 app.put("/api/profile/child", auth, async (req, res) => {
     try {
         const d = req.body || {};
+        console.log("[DEBUG child PUT] incoming payload:", d);
 
         const payload = {
             name: d.name || d.kindName || null,
@@ -294,6 +295,7 @@ app.put("/api/profile/child", auth, async (req, res) => {
             blood_group: d.blood_group || d.kindBlutgruppe || null,
             screening: d.screening || d.kindScreening || null
         };
+        console.log("[DEBUG child PUT] processed payload.birth_date=", payload.birth_date);
 
         const [rows] = await pool.query("SELECT id FROM child_data WHERE user_id = ? LIMIT 1", [req.user.userId]);
 
